@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import Board from "../Board";
 import Styled from "styled-components";
+import getNeighbors from "../../shared/common";
 
 export default class index extends Component {
   constructor(props) {
@@ -12,6 +13,10 @@ export default class index extends Component {
       size: 64,
       bombs: []
     };
+    //this.generateBoard();
+  }
+
+  componentWillMount(){
     this.generateBoard();
   }
   placeBombs = () => {
@@ -22,6 +27,7 @@ export default class index extends Component {
       while (bombArray.includes(location)) {
         location = Math.floor(Math.random() * this.state.size);
       }
+      
       bombArray[index] = location;
     }
     this.state.bombs = bombArray;
@@ -32,7 +38,9 @@ export default class index extends Component {
     for (let i = 0; i < this.state.size; i++) {
       const tile = {
         id: i,
-        value: " "
+        value: " ",
+        defused:false,
+        cleared:false
       };
 
       // Check to place a bomb
@@ -40,18 +48,7 @@ export default class index extends Component {
         tile.value = "B";
       } else {
         // Check for number
-        let neighbors = [-8, 8];
-        // Check first column
-        if (i % this.state.order != 0) {
-          neighbors.push(-9, -1, 7);
-          console.log(neighbors);
-        }
-
-        // Check last column
-        if ((i + 1) % this.state.order != 0) {
-          neighbors.push(9, 1, -7);
-          console.log(neighbors);
-        }
+        let neighbors=getNeighbors(i,this.state.order);
 
         // Check last column
         let count = 0;
@@ -73,11 +70,13 @@ export default class index extends Component {
       board: board
     });
   };
+
+  
   render() {
     return (
       <div className={this.props.className}>
-        {console.log(this.state.board)}
-        <Board board={this.state.board} />
+        
+        <Board board={this.state.board} order={this.state.order} size={this.state.size} />
       </div>
     );
   }
