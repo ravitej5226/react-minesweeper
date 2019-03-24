@@ -11,7 +11,8 @@ export default class index extends Component {
       bombCount: 10,
       order: 8,
       size: 64,
-      bombs: []
+      bombs: [],
+      gameState:'STARTED'
     };
     //this.generateBoard();
   }
@@ -76,7 +77,7 @@ export default class index extends Component {
     return (
       <div className={this.props.className}>
         
-        <Board board={this.state.board} order={this.state.order} size={this.state.size} />
+        <Board board={this.state.board} order={this.state.order} size={this.state.size} gameState={this.state.gameState} />
       </div>
     );
   }

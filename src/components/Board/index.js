@@ -9,12 +9,20 @@ class index extends Component {
         this.onTileClicked = this.onTileClicked.bind(this);
         this.openOtherTiles = this.openOtherTiles.bind(this);
         this.diffuseBomb = this.diffuseBomb.bind(this);
-        this.updatedBoard = this.props.board
+        this.clearTile=this.clearTile.bind(this)
+       // this.updatedBoard =  Object.assign([], this.props.board)
         this.visited = []
+
+        this.state={
+            board:this.props.board,
+            gameState:this.props.gameState
+
+        }
+        
 
     }
     diffuseBomb(tileId) {
-        let newBoard = this.updatedBoard;
+        let newBoard = this.state.board;
         if (!newBoard[tileId].cleared) {
             newBoard[tileId].diffused = !newBoard[tileId].diffused;
             this.setState({
@@ -26,54 +34,106 @@ class index extends Component {
             // TODO: DO not open if value does not equals neighboring diffuses
             const neighbors=getNeighbors(tileId,this.props.order);
 
+            // Check the diffuses in the neighbors
+            let diffusedCount=0
+            // If the diffused tiles are equal to or greater than value, open the neighbors
             neighbors.map(x => {
-                if (tileId < 0 || tileId > this.props.size - 1) {
+                if (x+tileId < 0 || x+tileId > this.props.size - 1) {
                     return;
                 }
+                if(newBoard[tileId+x].diffused)
+                {
+                    diffusedCount++;
+                }
+            })
 
-            });
+            if(diffusedCount>=newBoard[tileId].value){
+                // Open the neighbors
+                neighbors.map(x=>{
+                    if (x+tileId < 0 || x+tileId > this.props.size - 1) {
+                        return;
+                    }
+                    else{
+                        if(!newBoard[tileId+x].diffused)
+                        {
+                        this.clearTile(tileId+x,newBoard)
+                        }
+                    }
+                })
+            }
+         
 
             this.setState({
                 board: newBoard
             })
         }
     }
+
+    clearTile(tileId,board){
+        // Check if it is a bomb
+        // Else clear tile
+        let item={...board[tileId]}
+       item.cleared=true
+       board[tileId]=item;
+       
+        
+        if(board[tileId].value=='B'){
+            this.gameState='BUST'
+            this.setState({
+                gameState:'BUST'
+            })
+        }
+
+        // Check for winning condition
+        // If all the non-bombs are diffused, then the game is complete
+        let nonBombs=board.filter(x=>!x.cleared && x.value!=="B")
+        if(nonBombs.length==0){
+            this.setState({
+                gameState:'WIN'
+            })
+        }
+        return board; 
+    }
     onTileClicked(tileId) {
-        let newBoard = this.updatedBoard;
+        this.setState({
+            gameState:'Tile clicked'
+        })
+       let board=Object.assign([],this.state.board)
 
         // TODO: check for bomb
-        newBoard[tileId].cleared = true;
+        board=this.clearTile(tileId,board);
         this.visited=[]
-        this.openOtherTiles(tileId);
+        this.openOtherTiles(tileId,board);
+       
         this.setState({
-            board: newBoard
-        })
+            board:board
+        }) 
     }
 
-    openOtherTiles(tileId,forceOpen) {
+    openOtherTiles(tileId,board) {
 
 
         if (tileId < 0 || tileId > this.props.size - 1) {
-            return;
+            return board;
         }
-        if (this.updatedBoard[tileId].value.diffused){
-            return;
+        if (board[tileId].value.diffused){
+            return board;
         }
         console.log(tileId)
-        if (this.updatedBoard[tileId].value == 'B') {
-            return;
+        if (board[tileId].value == 'B') {
+            return board;
         }
-        if (this.updatedBoard[tileId].value != " ") {
-            this.updatedBoard[tileId].cleared = true;
-            return;
+        if (board[tileId].value != " ") {
+           this.clearTile(tileId,board);
+            return board;
         }
         else {
-            this.updatedBoard[tileId].cleared = true;
+            this.clearTile(tileId,board);
             let neighbors = getNeighbors(tileId, this.props.order);
             neighbors.map(x => {
                 if (!this.visited.includes(tileId + x)) {
                     this.visited.push(tileId + x)
-                    this.openOtherTiles(tileId + x)
+                    this.openOtherTiles(tileId + x,board)
                 }
 
             })
@@ -83,9 +143,12 @@ class index extends Component {
     render() {
         return (
             <div className={this.props.className}>
-
-                {this.props.board.map(x => (<Tile key={x.id} tile={x} onTileClicked={this.onTileClicked}
+            <h3>{this.state.gameState}</h3>
+            <div className='board'>
+               {this.state.board.map(x => (<Tile key={x.id} tile={x} onTileClicked={this.onTileClicked}
                     onDiffuseBomb={this.diffuseBomb}></Tile>))}
+                    
+            </div>
             </div>
         )
     }
@@ -93,12 +156,15 @@ class index extends Component {
 
 const StyledDiv = styled(index)`
 &{
-width:272px;
+   .board
+    { width:272px;
 line-height:2px;
-border:2px solid #ccc;
 margin:30px auto;
+border:2px solid #ccc;
+
 display:flex;
 flex-wrap:wrap;
+   }
 }
 `
 export default StyledDiv;
