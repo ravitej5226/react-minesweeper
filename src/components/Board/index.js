@@ -2,6 +2,8 @@ import React, { Component } from 'react'
 import Tile from '../Tile';
 import styled from 'styled-components';
 import getNeighbors from '../../shared/common';
+import Timer from '../Timer';
+import GameState from '../GameState';
 
 class index extends Component {
     constructor(props) {
@@ -15,7 +17,8 @@ class index extends Component {
 
         this.state={
             board:this.props.board,
-            gameState:this.props.gameState
+            gameState:this.props.gameState,
+            gameTime:this.props.gameTime
 
         }
         
@@ -68,7 +71,13 @@ class index extends Component {
             })
         }
     }
-
+    revealBoard=()=>{
+        let board=Object.assign([],this.state.board)
+        board.map(x=>x.cleared=true)
+        this.setState({
+            board:board
+        }) 
+    }
     clearTile(tileId,board){
         // Check if it is a bomb
         // Else clear tile
@@ -82,6 +91,9 @@ class index extends Component {
             this.setState({
                 gameState:'BUST'
             })
+            board[tileId].triggered=true
+            this.revealBoard();
+            return board;
         }
 
         // Check for winning condition
@@ -96,7 +108,7 @@ class index extends Component {
     }
     onTileClicked(tileId) {
         this.setState({
-            gameState:'Tile clicked'
+            gameState:'RUNNING'
         })
        let board=Object.assign([],this.state.board)
 
@@ -143,7 +155,8 @@ class index extends Component {
     render() {
         return (
             <div className={this.props.className}>
-            <h3>{this.state.gameState}</h3>
+            <h3><GameState gameState={this.state.gameState}/></h3>
+            <h4><Timer gameState={this.state.gameState} gameTime={this.state.gameTime} /></h4>
             <div className='board'>
                {this.state.board.map(x => (<Tile key={x.id} tile={x} onTileClicked={this.onTileClicked}
                     onDiffuseBomb={this.diffuseBomb}></Tile>))}

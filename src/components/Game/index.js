@@ -12,7 +12,8 @@ export default class index extends Component {
       order: 8,
       size: 64,
       bombs: [],
-      gameState:'STARTED'
+      gameState:'STARTED',
+      gameTime:0
     };
     //this.generateBoard();
   }
@@ -33,6 +34,9 @@ export default class index extends Component {
     }
     this.state.bombs = bombArray;
   };
+
+  
+
   generateBoard = () => {
     let board = [];
     this.placeBombs();
@@ -41,7 +45,8 @@ export default class index extends Component {
         id: i,
         value: " ",
         defused:false,
-        cleared:false
+        cleared:false,
+        triggered:false
       };
 
       // Check to place a bomb
@@ -77,7 +82,7 @@ export default class index extends Component {
     return (
       <div className={this.props.className}>
         
-        <Board board={this.state.board} order={this.state.order} size={this.state.size} gameState={this.state.gameState} />
+        <Board board={this.state.board} gameTime={this.state.gameTime} order={this.state.order} size={this.state.size} gameState={this.state.gameState} />
       </div>
     );
   }

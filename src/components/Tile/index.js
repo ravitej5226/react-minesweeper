@@ -34,7 +34,7 @@ const StyledTile = styled(index)`
   height:30px;
   display:inline-block;
   border:2px solid #ccc;
-  background-color:${props=>props.tile.cleared?'#bfbfbf':props.tile.diffused?'green':'#FFFFF'}
+  background-color:${props=>props.tile.triggered?'red':props.tile.cleared?'#bfbfbf':props.tile.diffused?'green':'#FFFFF'}
   .clear-tile,.diffuse-tile{
       width:inherit;
       height:inherit;
