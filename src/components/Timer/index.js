@@ -1,11 +1,12 @@
 import React, { Component } from 'react'
-
+import * as common from '../../shared/common'
 export default class index extends Component {
     constructor(props) {
         super(props)
         this.state = {
             gameState: this.props.gameState,
-            gameTime: this.props.gameTime
+            gameTime: this.props.gameTime,
+            formattedGameTime:common.getFormattedTime(this.props.gameTime.toString())
         }
     }
 
@@ -23,7 +24,8 @@ export default class index extends Component {
     tick=()=> {
         if (this.props.gameState == 'RUNNING') {
             this.setState(prevState => ({
-                gameTime: prevState.gameTime + 1
+                gameTime: prevState.gameTime + 1,
+                formattedGameTime:common.getFormattedTime(prevState.gameTime + 1)
             }));
         }
     }
@@ -32,7 +34,7 @@ export default class index extends Component {
     render() {
         return (
             <div>
-{this.state.gameTime}
+{this.state.formattedGameTime}
             </div>
         )
     }

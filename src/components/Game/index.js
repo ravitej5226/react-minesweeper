@@ -2,88 +2,43 @@ import React, { Component } from "react";
 import Board from "../Board";
 import Styled from "styled-components";
 import getNeighbors from "../../shared/common";
+import { connect } from 'react-redux'
+import { SET_GAME_LEVEL} from './Game.constants';
 
-export default class index extends Component {
+
+class index extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      board: null,
-      bombCount: 10,
-      order: 8,
-      size: 64,
-      bombs: [],
-      gameState:'STARTED',
-      gameTime:0
-    };
-    //this.generateBoard();
+    this.state=this.props    
   }
 
   componentWillMount(){
-    this.generateBoard();
+    this.props.setGameLevel(8);
+   
   }
-  placeBombs = () => {
-    // Generate bombs
-    let bombArray = new Array(this.state.bombCount).fill(-1);
-    for (let index = 0; index < this.state.bombCount; index++) {
-      let location = -1;
-      while (bombArray.includes(location)) {
-        location = Math.floor(Math.random() * this.state.size);
-      }
-      
-      bombArray[index] = location;
-    }
-    this.state.bombs = bombArray;
-  };
-
-  
-
-  generateBoard = () => {
-    let board = [];
-    this.placeBombs();
-    for (let i = 0; i < this.state.size; i++) {
-      const tile = {
-        id: i,
-        value: " ",
-        defused:false,
-        cleared:false,
-        triggered:false
-      };
-
-      // Check to place a bomb
-      if (this.state.bombs.includes(i)) {
-        tile.value = "B";
-      } else {
-        // Check for number
-        let neighbors=getNeighbors(i,this.state.order);
-
-        // Check last column
-        let count = 0;
-        neighbors.map(x => {
-          if (i + x > 0 && this.state.bombs.includes(i + x)) {
-            count++;
-          }
-        });
-
-        if (count > 0) {
-          tile.value = count;
-        }
-      }
-
-      board.push(tile);
-    }
-    this.state.board = board;
-    this.setState({
-      board: board
-    });
-  };
-
   
   render() {
     return (
       <div className={this.props.className}>
         
-        <Board board={this.state.board} gameTime={this.state.gameTime} order={this.state.order} size={this.state.size} gameState={this.state.gameState} />
+        <Board />
       </div>
     );
   }
 }
+
+const mapStateToProps=(state)=>
+{
+return state;
+}
+
+const mapDispatchToProps=(dispatch)=>{
+ return{
+  setGameLevel:(order)=>dispatch({
+    type:SET_GAME_LEVEL,
+    order:order
+  })
+}
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(index)

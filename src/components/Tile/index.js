@@ -5,7 +5,7 @@ class index extends Component {
         e.preventDefault();
        // e.stopPropgation();
        if (e.type === 'contextmenu') {
-         this.props.onDiffuseBomb(id)
+         this.props.onDiffuseMine(id)
         }
      }
     render() {

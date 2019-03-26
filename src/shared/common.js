@@ -1,4 +1,7 @@
-function getNeighbors(cell,order){
+import { format } from "url";
+import { stringify } from "querystring";
+
+export function getNeighbors(cell,order){
     const neighbors = [-8, 8];
         // Check first column
         if (cell % order != 0) {
@@ -15,4 +18,21 @@ function getNeighbors(cell,order){
         return neighbors;
 }
 
-export default getNeighbors;
+export function getFormattedTime(ticks){
+  // Format minutes
+  let minutes=parseInt(ticks/60);
+
+  if(minutes<10){
+    minutes=`0${minutes}`;
+  }
+  // Format seconds
+let seconds=ticks%60
+if(seconds<10){
+  seconds=`0${seconds}`
+}
+  // TODO: Format hours if required
+  return  `${minutes}:${seconds}`
+}
+
+
+export default {getNeighbors,getFormattedTime};
