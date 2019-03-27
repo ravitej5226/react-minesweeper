@@ -1,9 +1,9 @@
 import React, { Component } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { GAME_STATE } from "../../shared/constants";
-import styled from 'styled-components';
+import styled from "styled-components";
 
- class index extends Component {
+class index extends Component {
   render() {
     return (
       <button className={this.props.className} onClick={this.props.onReset}>
@@ -21,19 +21,18 @@ import styled from 'styled-components';
   }
 }
 
-const StyledButton=styled(index)`
-&{
-  font-size: 25px;
+const StyledButton = styled(index)`
+  & {
+    font-size: 25px;
     border: 4px solid;
     border-style: outset;
-    background-color:#ccc;
-    outline:none;
-    color:${props=>props.theme.colors.dynamicYellow}
-
-    
-}
-button:not(:disabled){
-  outline:none;
-}`
+    background-color: ${props => props.theme.colors.darkGrey};
+    outline: none;
+    color: ${props => props.theme.colors.dynamicYellow};
+  }
+  button:not(:disabled) {
+    outline: none;
+  }
+`;
 
 export default StyledButton;

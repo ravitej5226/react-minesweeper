@@ -6,13 +6,13 @@ import GameState from "../GameState";
 import { GAME_STATE } from "../../shared/constants";
 import { connect } from "react-redux";
 import {
-  GENERATE_BOARD,
-  TILE_CLICK,
-  DIFFUSE_MINE,
-  CLEAR_NEIGHBORS,
-  REVEAL_ONE_MINE,
-  VALIDATE
-} from "./Board.constants";
+  generateBoard,
+  onClearNeighbors,
+  onDiffuseMine,
+  onRevealOneMine,
+  onTileClicked,
+  onValidate
+} from "./Board.actions";
 import * as Bootstrap from "react-bootstrap";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -21,48 +21,78 @@ class index extends Component {
   constructor(props) {
     super(props);
 
-    this.onTileClick = this.onTileClick.bind(this)
+    this.onTileClick = this.onTileClick.bind(this);
+
+    this.state = {
+      gameTime: this.props.gameTime
+    };
   }
 
-  onTileClick = (tileId) => {
+  onTileClick = tileId => {
+    if (this.props.gameState === GAME_STATE.WIN) {
+      return;
+    }
     if (this.props.gameStart) {
-      this.props.onTileClicked(tileId)
-    }
-    else {
-      this.props.generateBoard(tileId)
-      this.props.onTileClicked(tileId)
-    }
-  }
+      this.props.onTileClicked(tileId);
+    } else {
+      // Generate the board
+      this.props.generateBoard(tileId);
 
+      // Invoke the tile clicked event now
+      this.props.onTileClicked(tileId);
+
+      // Start the game timer
+      this.timerID = setInterval(() => this.tick(), 1000);
+
+      this.setState(prevState => ({
+        gameTime: this.props.gameTime
+      }));
+    }
+  };
+
+  tick = () => {
+    if (
+      this.props.gameState === GAME_STATE.WIN ||
+      this.props.gameState === GAME_STATE.BUST
+    ) {
+      // clearInterval(this.timerID);
+    } else if (this.props.gameState === GAME_STATE.INITIALIZED) {
+      this.setState(prevState => ({
+        gameTime: this.props.gameTime
+      }));
+      clearInterval(this.timerID);
+    } else {
+      this.setState(prevState => ({
+        gameTime: prevState.gameTime + 1
+      }));
+    }
+  };
 
   render() {
     return (
       <div className={this.props.className}>
         <Bootstrap.Row className="board-header">
-          <Bootstrap.Col className="header-section">
-            <div class="header-name">mines remaining</div>
+          <Bootstrap.Col className="header-section mine-rem">
+            <div className="header-name">mines remaining</div>
             <div className="header-value">
               <button onClick={this.props.onRevealOneMine} className="hint">
                 <FontAwesomeIcon icon="lightbulb" />
               </button>
               {this.props.minesRemaining}
-
             </div>
           </Bootstrap.Col>
           <Bootstrap.Col>
-          
-              <GameState 
-                gameState={this.props.gameState}
-                onReset={this.props.onValidate}
-              />
-           
+            <GameState
+              gameState={this.props.gameState}
+              onReset={this.props.onValidate}
+            />
           </Bootstrap.Col>
           <Bootstrap.Col className="header-section">
-            <div class="header-name">time</div>
+            <div className="header-name">time</div>
             <div className="header-value">
               <Timer
                 gameState={this.props.gameState}
-                gameTime={this.props.gameTime}
+                gameTime={this.state.gameTime}
               />
             </div>
           </Bootstrap.Col>
@@ -80,8 +110,8 @@ class index extends Component {
                 />
               ))
             ) : (
-                <div>Loading board</div>
-              )}
+              <div>Loading board</div>
+            )}
           </div>
         </Bootstrap.Row>
       </div>
@@ -91,7 +121,7 @@ class index extends Component {
 
 const StyledDiv = styled(index)`
   & {
-    width: 244px;
+    width: ${props => props.order * 30 + 4}px;
     margin: 50px auto;
 
     .row {
@@ -112,7 +142,7 @@ const StyledDiv = styled(index)`
       border: 4px solid #ccc;
       border-bottom: 2px;
       padding: 5px;
-      
+
       .col {
         padding: 0px;
       }
@@ -133,11 +163,18 @@ const StyledDiv = styled(index)`
       font-weight: 300;
     }
 
-    .hint{
+    .hint {
       font-size: 14px;
-    vertical-align: middle;
-    border:none;
-    outline:none;
+      vertical-align: middle;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: ${props => props.theme.colors.dynamicGreen};
+      ${props => props.theme.animations.colorBlink};
+    }
+
+    .mine-rem {
+      text-align: left;
     }
   }
 `;
@@ -146,42 +183,17 @@ const mapStateToProps = state => {
   return state;
 };
 
-const mapDispatchToProps = (dispatch, props) => {
-  return {
-    generateBoard: (tileId) =>
-      dispatch({
-        type: GENERATE_BOARD,
-        tileId: tileId
-      }),
-    onTileClicked: tileId =>
-      dispatch({
-        type: TILE_CLICK,
-        tileId: tileId
-      }),
-    onDiffuseMine: tileId =>
-      dispatch({
-        type: DIFFUSE_MINE,
-        tileId: tileId
-      }),
-    onClearNeighbors: tileId =>
-      dispatch({
-        type: CLEAR_NEIGHBORS,
-        tileId: tileId
-      }),
-    onRevealOneMine: () =>
-      dispatch({
-        type: REVEAL_ONE_MINE
-      })
-    ,
-    onValidate: () =>
-      dispatch({
-        type: VALIDATE
-      })
-  };
+const mapDispatchToProps = {
+  generateBoard,
+  onClearNeighbors,
+  onDiffuseMine,
+  onRevealOneMine,
+  onTileClicked,
+  onValidate
 };
 
 index.propTypes = {
-  gameState: PropTypes.oneOf(GAME_STATE).isRequired,
+  gameState: PropTypes.string,
   mineCount: PropTypes.number,
   minesRemaining: PropTypes.number,
   order: PropTypes.number,
