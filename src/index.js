@@ -1,10 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import * as ReactRedux from "react-redux";
-import * as Bootstrap from "react-bootstrap";
 import "bootstrap/dist/css//bootstrap.css";
 import "roboto-fontface/css/roboto/sass/roboto-fontface.scss";
 import { createStore } from "redux";

@@ -22,8 +22,21 @@ const colors = {
   errorRed: "rgb(208,2,27)" // #D0021B
 };
 
+const valueColors={
+  "1":colors.purple,
+  "2":colors.dynamicBlue,
+  "3":colors.errorRed,
+  "4":colors.dynamicYellow,
+  "5":colors.pinkyPurple,
+  "6":colors.venus
+}
+
+const frameBorder=colors.lightGrey
+
 const theme = {
-  colors
+  colors,
+  valueColors,
+  frameBorder 
 };
 
 export default theme;

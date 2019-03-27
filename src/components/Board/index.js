@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import Tile from "../Tile";
 import styled from "styled-components";
-import getNeighbors from "../../shared/common";
 import Timer from "../Timer";
 import GameState from "../GameState";
 import { GAME_STATE } from "../../shared/constants";
@@ -11,28 +10,30 @@ import {
   TILE_CLICK,
   DIFFUSE_MINE,
   CLEAR_NEIGHBORS,
-  REVEAL_ONE_MINE
+  REVEAL_ONE_MINE,
+  VALIDATE
 } from "./Board.constants";
 import * as Bootstrap from "react-bootstrap";
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 class index extends Component {
   constructor(props) {
     super(props);
-    //  this.props.onTileClicked = this.props.onTileClicked.bind(this);
-    //this.openOtherTiles = this.openOtherTiles.bind(this);
-    //   this.diffuseBomb = this.diffuseBomb.bind(this);
-    // this.clearTile=this.clearTile.bind(this)
-    // this.updatedBoard =  Object.assign([], this.props.board)
-    // this.visited = []
 
-    //  this.state=this.props
+    this.onTileClick = this.onTileClick.bind(this)
   }
 
-  componentDidMount() {
-    this.props.generateBoard();
+  onTileClick = (tileId) => {
+    if (this.props.gameStart) {
+      this.props.onTileClicked(tileId)
+    }
+    else {
+      this.props.generateBoard(tileId)
+      this.props.onTileClicked(tileId)
+    }
   }
-  diffuseBomb(tileId) {}
+
 
   render() {
     return (
@@ -41,18 +42,20 @@ class index extends Component {
           <Bootstrap.Col className="header-section">
             <div class="header-name">mines remaining</div>
             <div className="header-value">
-              <button onClick={this.props.onRevealOneMine}>
-                {this.props.minesRemaining}
+              <button onClick={this.props.onRevealOneMine} className="hint">
+                <FontAwesomeIcon icon="lightbulb" />
               </button>
+              {this.props.minesRemaining}
+
             </div>
           </Bootstrap.Col>
           <Bootstrap.Col>
-            <h3>
-              <GameState
+          
+              <GameState 
                 gameState={this.props.gameState}
-                onReset={this.props.generateBoard}
+                onReset={this.props.onValidate}
               />
-            </h3>
+           
           </Bootstrap.Col>
           <Bootstrap.Col className="header-section">
             <div class="header-name">time</div>
@@ -71,14 +74,14 @@ class index extends Component {
                 <Tile
                   key={x.id}
                   tile={x}
-                  onTileClicked={this.props.onTileClicked}
+                  onTileClicked={this.onTileClick}
                   onDiffuseMine={this.props.onDiffuseMine}
                   onClearNeighbors={this.props.onClearNeighbors}
                 />
               ))
             ) : (
-              <div>Loading board</div>
-            )}
+                <div>Loading board</div>
+              )}
           </div>
         </Bootstrap.Row>
       </div>
@@ -109,7 +112,7 @@ const StyledDiv = styled(index)`
       border: 4px solid #ccc;
       border-bottom: 2px;
       padding: 5px;
-      padding-bottom: 0px;
+      
       .col {
         padding: 0px;
       }
@@ -117,17 +120,24 @@ const StyledDiv = styled(index)`
 
     .header-section {
       line-height: 1;
-      text-align: center;
+      text-align: right;
     }
 
     .header-value {
-      font-size: 30px;
+      font-size: 24px;
       font-weight: 600;
     }
 
     .header-name {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 300;
+    }
+
+    .hint{
+      font-size: 14px;
+    vertical-align: middle;
+    border:none;
+    outline:none;
     }
   }
 `;
@@ -136,11 +146,12 @@ const mapStateToProps = state => {
   return state;
 };
 
-const mapDispatchToProps = dispatch => {
+const mapDispatchToProps = (dispatch, props) => {
   return {
-    generateBoard: () =>
+    generateBoard: (tileId) =>
       dispatch({
-        type: GENERATE_BOARD
+        type: GENERATE_BOARD,
+        tileId: tileId
       }),
     onTileClicked: tileId =>
       dispatch({
@@ -160,6 +171,11 @@ const mapDispatchToProps = dispatch => {
     onRevealOneMine: () =>
       dispatch({
         type: REVEAL_ONE_MINE
+      })
+    ,
+    onValidate: () =>
+      dispatch({
+        type: VALIDATE
       })
   };
 };

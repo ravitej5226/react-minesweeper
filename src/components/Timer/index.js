@@ -16,16 +16,41 @@ export default class index extends Component {
   componentDidMount() {
     this.timerID = setInterval(() => this.tick(), 1000);
   }
+  componentDidUpdate(prevProps, prevState){
+    if(this.state.gameState!==prevState.gameState)
+    {
+    this.tick()
+    }
+  }
 
+  static getDerivedStateFromProps(nextProps, prevState){
+    if(nextProps.gameState!==prevState.gameState){
+      return { gameState: nextProps.gameState,
+      gameTime:nextProps.gameTime};
+   }
+   else return null;
+ }
   componentWillUnmount() {
     clearInterval(this.timerID);
   }
 
   tick = () => {
-    if (this.props.gameState == GAME_STATE.RUNNING) {
+    if (this.props.gameState === GAME_STATE.RUNNING) {
+      if (this.timerID) {
+        this.setState(prevState => ({
+          gameTime: prevState.gameTime + 1,
+          formattedGameTime: common.getFormattedTime(prevState.gameTime + 1)
+        }));
+      }
+      else {
+        this.timerID = setInterval(() => this.tick(), 1000);
+      }
+    } else {
+      clearInterval(this.timerID);
+      this.timerID=null
       this.setState(prevState => ({
-        gameTime: prevState.gameTime + 1,
-        formattedGameTime: common.getFormattedTime(prevState.gameTime + 1)
+        gameTime: this.state.gameState,
+        formattedGameTime: common.getFormattedTime(prevState.gameTime)
       }));
     }
   };

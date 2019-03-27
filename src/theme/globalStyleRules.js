@@ -1,4 +1,4 @@
-import theme from "./";
+
 
 export default `
 .App {

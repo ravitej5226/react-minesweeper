@@ -3,12 +3,14 @@ import {
   DIFFUSE_MINE,
   TILE_CLICK,
   CLEAR_NEIGHBORS,
-  REVEAL_ONE_MINE
+  REVEAL_ONE_MINE,
+  VALIDATE
 } from "./components/Board/Board.constants";
-import { getNeighbors } from "./shared/common";
+// import { getNeighbors } from "./shared/common";
 import { SET_GAME_LEVEL } from "./components/Game/Game.constants";
 
-import { GAME_STATE } from "./shared/constants";
+import { GAME_STATE, CELL_TYPE } from "./shared/constants";
+import common from './shared/common'
 
 const initialState = {
   board: null,
@@ -19,96 +21,9 @@ const initialState = {
   mines: [],
   gameState: GAME_STATE.INITIALIZED,
   gameTime: 0,
-  timerId: null
+  gameStart: false
 };
 
-function placeBombs(mineCount, size) {
-  // Generate bombs
-  let mineArray = new Array(mineCount).fill(-1);
-  for (let index = 0; index < mineCount; index++) {
-    let location = -1;
-    while (mineArray.includes(location)) {
-      location = Math.floor(Math.random() * size);
-    }
-
-    mineArray[index] = location;
-  }
-  return mineArray;
-}
-
-function clearTile(tileId, board) {
-  // Check if it is a bomb
-  // Else clear tile
-  let item = { ...board[tileId] };
-  item.cleared = true;
-
-  if (item.value == "B") {
-    item.triggered = true;
-  }
-  board[tileId] = item;
-  return board;
-
-  return board;
-}
-
-function getGameState(board, gameState) {
-  // let gameState = "";
-  let mines = board.filter(x => x.cleared && x.value === "B");
-  if (mines.length > 0) {
-    gameState = GAME_STATE.BUST;
-    return gameState;
-  }
-
-  // Check for winning condition
-  // If all the non-bombs are diffused, then the game is complete
-  let nonMines = board.filter(x => !x.cleared && x.value !== "B");
-  if (nonMines.length == 0) {
-    gameState = GAME_STATE.WIN;
-  }
-  return gameState;
-}
-
-function revealBoard(board) {
-  board.map(x => (x.cleared = true));
-  return board;
-}
-
-function openOtherTiles(tileId, board, size, order) {
-  let visited = [];
-  let queue = [tileId];
-  let boardState = {};
-  let gameState = "";
-  while (queue.length > 0) {
-    let index = queue.pop();
-
-    if (index < 0 || index > size - 1) {
-      // return board;
-      //continue;
-    } else if (!board[index].diffused && !(board[index].value == "B")) {
-      if (board[index].value != " ") {
-        board = clearTile(index, board);
-      } else {
-        board = clearTile(index, board);
-
-        console.log("getting neighbors");
-        let neighbors = getNeighbors(index, order);
-        neighbors.map(x => {
-          if (
-            !visited.includes(index + x) &&
-            !(index + x < 0 || index + x > size - 1)
-          ) {
-            visited.push(index + x);
-            queue.push(index + x);
-          }
-        });
-        console.log("done loading queue");
-        console.log(`queue: ${queue}`);
-      }
-    }
-  }
-  console.log(`visited: ${visited}`);
-  return board;
-}
 
 export default (state = initialState, action) => {
   switch (action.type) {
@@ -117,71 +32,72 @@ export default (state = initialState, action) => {
       let size = order * order;
 
       // TODO: Add logic if more levels are added
-      let mineCount = 10;
-
-      if (order == 16) {
-        mineCount = 40;
-      } else if (order == 24) {
-        mineCount = 99;
-      }
-      let minesRemaining = mineCount;
-      let gameTime = 0;
-      let mines = [];
-      let gameState = GAME_STATE.INITIALIZED;
+      const game = common.initializeGame(order, size)
 
       return Object.assign({}, state, {
+
         size,
         order,
-        mineCount,
-        gameTime,
-        mines,
-        gameState,
-        minesRemaining
+        ...game
       });
 
     case GENERATE_BOARD: {
       let board = [];
       const previousState = { ...state };
       let gameState = GAME_STATE.INITIALIZED;
-      let mineArray = placeBombs(previousState.mineCount, previousState.size);
+
       let minesRemaining = state.mineCount;
+      let gameTime = 0;
+      let initialTile = action.tileId;
+      let forbiddenTiles = common.getNeighbors(initialTile, order)
+      forbiddenTiles = forbiddenTiles.map(x => x + initialTile)
+      forbiddenTiles.push(initialTile)
+      console.log(`forbidden tiles: ${forbiddenTiles}`)
+      let mineArray = common.placeBombs(previousState.mineCount, previousState.size, forbiddenTiles);
+      console.log(`mines: ${mineArray}`)
       for (let i = 0; i < previousState.size; i++) {
         const tile = {
           id: i,
           value: " ",
           diffused: false,
           cleared: false,
-          triggered: false
+          triggered: false,
+          type: CELL_TYPE.NORMAL
         };
 
         // Check to place a bomb
         if (mineArray.includes(i)) {
           tile.value = "B";
+          tile.type = CELL_TYPE.MINE
         } else {
           // Check for number
-          let neighbors = getNeighbors(i, previousState.order);
+          let neighbors = common.getNeighbors(i, previousState.order);
 
           // Check last column
           let count = 0;
-          neighbors.map(x => {
+          neighbors=neighbors.map(x => {
             if (i + x >= 0 && mineArray.includes(i + x)) {
               count++;
             }
+            return x
           });
 
           if (count > 0) {
             tile.value = count;
+            tile.type = CELL_TYPE.NEIGHBOR
           }
         }
 
         board.push(tile);
       }
-
+      let gameStart = true;
       return Object.assign({}, state, {
         board: board,
         mines: mineArray,
         gameState,
-        minesRemaining
+        minesRemaining,
+        gameTime,
+        gameStart
       });
     }
     case TILE_CLICK: {
@@ -192,17 +108,19 @@ export default (state = initialState, action) => {
       let order = state.order;
 
       // Clear the tile
-      board = clearTile(tileId, board, size);
-      board = openOtherTiles(tileId, board, size, order);
+      board = common.clearTile(tileId, board, size);
+      board = common.openOtherTiles(tileId, board, size, order);
 
       // Get the game state
-      gameState = getGameState(board, gameState);
+      gameState = common.getGameState(board, gameState);
 
-      if (gameState == GAME_STATE.WIN) {
-        // TODO: Handle winning condition
-      } else if (gameState === GAME_STATE.BUST) {
+      // Win condition is explicitly handled through validate logic
+      // if (gameState == GAME_STATE.WIN) {
+      //   // TODO: Handle winning condition
+      // } else 
+      if (gameState === GAME_STATE.BUST) {
         // TODO: Handle game lost condition
-        board = revealBoard(board);
+        board = common.revealBoard(board);
       }
 
       return Object.assign({}, state, { board: board, gameState });
@@ -210,8 +128,7 @@ export default (state = initialState, action) => {
     case DIFFUSE_MINE: {
       let tileId = action.tileId;
       let board = Object.assign([], state.board);
-      let size = state.size;
-      let order = state.order;
+      
       let minesRemaining = state.minesRemaining;
       if (!board[tileId].cleared) {
         board[tileId].diffused = !board[tileId].diffused;
@@ -225,57 +142,61 @@ export default (state = initialState, action) => {
       let board = Object.assign([], state.board);
       let size = state.size;
       let order = state.order;
+      let gameState = state.gameState;
 
       // DO not open if value does not equals neighboring diffuses
-      const neighbors = getNeighbors(tileId, order);
+      let neighbors = common.getNeighbors(tileId, order);
 
       // Check the diffuses in the neighbors
       let diffusedCount = 0;
       // If the diffused tiles are equal to or greater than value, open the neighbors
-      neighbors.map(x => {
+      neighbors=neighbors.map(x => {
         if (x + tileId < 0 || x + tileId > size - 1) {
-          return;
+          return x;
         }
         if (board[tileId + x].diffused) {
           diffusedCount++;
         }
+        return x;
       });
 
       if (diffusedCount >= board[tileId].value) {
         // Open the neighbors
         neighbors.map(x => {
           if (x + tileId < 0 || x + tileId > size - 1) {
-            return;
+            return x;
           } else {
             if (!board[tileId + x].diffused) {
-              board = clearTile(tileId + x, board);
+              board = common.clearTile(tileId + x, board);
 
-              if (board[tileId + x].value == " ") {
+              if (board[tileId + x].value === " ") {
                 console.log("Triggering new logic");
-                board = openOtherTiles(tileId + x, board, size, order);
+                board = common.openOtherTiles(tileId + x, board, size, order);
               }
             }
+            return x;
           }
         });
       }
 
       // Get the game state
-      gameState = getGameState(board, gameState);
+      gameState = common.getGameState(board, gameState, false);
 
-      if (gameState == GAME_STATE.WIN) {
-        // TODO: Handle winning condition
-      } else if (gameState === GAME_STATE.BUST) {
+      // Win condition is explicitly handled through validate method
+      // if (gameState == GAME_STATE.WIN) {
+      //   // TODO: Handle winning condition
+      // } else 
+      if (gameState === GAME_STATE.BUST) {
         // TODO: Handle game lost condition
-        board = revealBoard(board);
+        board = common.revealBoard(board);
       }
       return Object.assign({}, state, { board, gameState });
     }
 
     case REVEAL_ONE_MINE: {
-      let tileId = action.tileId;
+
       let board = Object.assign([], state.board);
-      let size = state.size;
-      let order = state.order;
+
       let mines = state.mines;
       let minesRemaining = state.minesRemaining;
       if (minesRemaining > 0) {
@@ -284,15 +205,42 @@ export default (state = initialState, action) => {
         // Pick a random mine
         // set diffused to true
         let diffusedMines = board
-          .filter(x => x.diffused && x.value == "B")
+          .filter(x => x.diffused && x.value === "B")
           .map(y => y.id);
 
         let undiffusedMines = mines.filter(x => !diffusedMines.includes(x));
         let randomMine = parseInt(Math.random() * undiffusedMines.length);
+
+        if(undiffusedMines.length>0){
         board[undiffusedMines[randomMine]].diffused = true;
         minesRemaining = minesRemaining - 1;
+        }
       }
       return Object.assign({}, state, { board, minesRemaining });
+    }
+
+    case VALIDATE: {
+      // Get the game state
+      let board = Object.assign([], state.board);
+      let gameState = state.gameState;
+      let game = {}
+      let resetGame=false
+
+      if (gameState !== GAME_STATE.WIN){
+      gameState=common.getGameState(board,gameState,true);
+      game.gameState = gameState;
+      }
+      else{
+        resetGame=true
+      }
+
+      // If it is a WIN, set state to win
+      if (gameState !== GAME_STATE.WIN || resetGame) {
+        // Else reset the board
+        game = common.initializeGame(state.order, state.size)
+      }
+      
+      return Object.assign({}, state, { ...game });
     }
     default:
       return state;
