@@ -27,7 +27,7 @@ class index extends Component {
             </button>
             <button className={(this.props && this.props.order === 24 ? "active" : "")}
             onClick={() => this.props.setGameLevel(24)}>
-              Difficulty
+              Hard
             </button>
           </div>
         <Board />
