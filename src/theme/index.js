@@ -19,14 +19,15 @@ const colors = {
   mediumGrey: "rgb(148,148,148)", // #949494
   darkGrey: "rgb(99,101,107)", // #63656B
   silver: "rgb(188,186,186)", // #BCBABA
-  errorRed: "rgb(208,2,27)" // #D0021B
+  errorRed: "rgb(208,2,27)", // #D0021B
+  darkRed:"rgb(199,8,8)"//#c70808
 };
 
 const valueColors = {
   "1": colors.purple,
   "2": colors.dynamicBlue,
   "3": colors.errorRed,
-  "4": colors.dynamicYellow,
+  "4": colors.influentialGreen,
   "5": colors.pinkyPurple,
   "6": colors.venus
 };
@@ -68,7 +69,7 @@ const animations = {
 
 const cellStyle = {
   [CELL_TYPE.MINE]: `
-  padding-top:6px;
+  padding-top:4px;
   padding-left:2px;`,
   [CELL_TYPE.NEIGHBOR]: `
   padding-top:12px;`

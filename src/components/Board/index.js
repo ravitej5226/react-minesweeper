@@ -1,8 +1,6 @@
 import React, { Component } from "react";
 import Tile from "../Tile";
 import styled from "styled-components";
-import Timer from "../Timer";
-import GameState from "../GameState";
 import { GAME_STATE } from "../../shared/constants";
 import { connect } from "react-redux";
 import {
@@ -15,7 +13,7 @@ import {
 } from "./Board.actions";
 import * as Bootstrap from "react-bootstrap";
 import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import BoardHeader from '../BoardHeader'
 
 class index extends Component {
   constructor(props) {
@@ -32,7 +30,7 @@ class index extends Component {
     if (this.props.gameState === GAME_STATE.WIN) {
       return;
     }
-    if (this.props.gameStart) {
+    if (this.props.gameInProgress) {
       this.props.onTileClicked(tileId);
     } else {
       // Generate the board
@@ -44,7 +42,7 @@ class index extends Component {
       // Start the game timer
       this.timerID = setInterval(() => this.tick(), 1000);
 
-      this.setState(prevState => ({
+      this.setState(() => ({
         gameTime: this.props.gameTime
       }));
     }
@@ -57,7 +55,7 @@ class index extends Component {
     ) {
       // clearInterval(this.timerID);
     } else if (this.props.gameState === GAME_STATE.INITIALIZED) {
-      this.setState(prevState => ({
+      this.setState(() => ({
         gameTime: this.props.gameTime
       }));
       clearInterval(this.timerID);
@@ -71,32 +69,9 @@ class index extends Component {
   render() {
     return (
       <div className={this.props.className}>
-        <Bootstrap.Row className="board-header">
-          <Bootstrap.Col className="header-section mine-rem">
-            <div className="header-name">mines remaining</div>
-            <div className="header-value">
-              <button onClick={this.props.onRevealOneMine} className="hint">
-                <FontAwesomeIcon icon="lightbulb" />
-              </button>
-              {this.props.minesRemaining}
-            </div>
-          </Bootstrap.Col>
-          <Bootstrap.Col>
-            <GameState
-              gameState={this.props.gameState}
-              onReset={this.props.onValidate}
-            />
-          </Bootstrap.Col>
-          <Bootstrap.Col className="header-section">
-            <div className="header-name">time</div>
-            <div className="header-value">
-              <Timer
-                gameState={this.props.gameState}
-                gameTime={this.state.gameTime}
-              />
-            </div>
-          </Bootstrap.Col>
-        </Bootstrap.Row>
+        <BoardHeader gameTime={this.state.gameTime} gameState={this.props.gameState}
+          onRevealOneMine={this.props.onRevealOneMine} minesRemaining={this.props.minesRemaining} 
+          onValidate={this.props.onValidate}/>
         <Bootstrap.Row>
           <div className="board">
             {this.props.board ? (
@@ -110,8 +85,8 @@ class index extends Component {
                 />
               ))
             ) : (
-              <div>Loading board</div>
-            )}
+                <div>Loading board</div>
+              )}
           </div>
         </Bootstrap.Row>
       </div>

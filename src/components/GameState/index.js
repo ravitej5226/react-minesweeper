@@ -30,9 +30,6 @@ const StyledButton = styled(index)`
     outline: none;
     color: ${props => props.theme.colors.dynamicYellow};
   }
-  button:not(:disabled) {
-    outline: none;
-  }
 `;
 
 export default StyledButton;

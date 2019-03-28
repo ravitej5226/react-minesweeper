@@ -1,5 +1,10 @@
 import { GAME_STATE, CELL_TYPE } from "./constants";
 
+/**
+ * Initialize game with default values
+ * @param {int} order 
+ * @param {int} size 
+ */
 function initializeGame(order, size) {
   // Get mine count based on complexity
   // TODO: Handling complexity in rest of the app
@@ -17,7 +22,7 @@ function initializeGame(order, size) {
   let mines = [];
   let gameState = GAME_STATE.INITIALIZED;
   let board = [];
-  let gameStart = false;
+  let gameInProgress = false;
 
   // Push default tiles to the board
   for (let i = 0; i < size; i++) {
@@ -39,10 +44,15 @@ function initializeGame(order, size) {
     mines,
     gameState,
     board,
-    gameStart
+    gameInProgress
   };
 }
 
+/**
+ * Get the neighboring values within bounds of a given cell
+ * @param {int} cell 
+ * @param {int} order 
+ */
 function getNeighbors(cell, order) {
   const neighbors = [-order, order];
 
@@ -59,7 +69,11 @@ function getNeighbors(cell, order) {
   return neighbors;
 }
 
-export function getFormattedTime(ticks) {
+/**
+ * Gets the formatted time given the ticks
+ * @param {int} ticks 
+ */
+function getFormattedTime(ticks) {
   // Format minutes
   let minutes = parseInt(ticks / 60);
 
@@ -76,7 +90,13 @@ export function getFormattedTime(ticks) {
   return `${minutes}:${seconds}`;
 }
 
-function placeBombs(mineCount, size, forbiddenTiles) {
+/**
+ * Generate random set of mines and return
+ * @param {int} mineCount 
+ * @param {int} size 
+ * @param {list} forbiddenTiles 
+ */
+function getMineLocations(mineCount, size, forbiddenTiles) {
   // Generate bombs
   let mineArray = new Array(mineCount).fill(-1);
   for (let index = 0; index < mineCount; index++) {
@@ -90,6 +110,11 @@ function placeBombs(mineCount, size, forbiddenTiles) {
   return mineArray;
 }
 
+/**
+ * Clears a given tile
+ * @param {int} tileId 
+ * @param {object} board 
+ */
 function clearTile(tileId, board) {
   // Check if it is a mine, trigger if it is a bomb
   // Else clear tile
@@ -103,6 +128,13 @@ function clearTile(tileId, board) {
   return board;
 }
 
+/**
+ * Returns the game state except for a WIN state
+ * If isValidation is true, returns the WIN state as well
+ * @param {object} board 
+ * @param {string} gameState 
+ * @param {bool} isValidation 
+ */
 function getGameState(board, gameState, isValidation) {
   // let gameState = "";
   let mines = board.filter(x => x.cleared && x.type === CELL_TYPE.MINE);
@@ -123,11 +155,22 @@ function getGameState(board, gameState, isValidation) {
   return gameState;
 }
 
+/**
+ * Reveals all tiles in the board
+ * @param {object} board board
+ */
 function revealBoard(board) {
   board.map(x => (x.cleared = true));
   return board;
 }
 
+/**
+ * Opens all the neighboring tiles of a given tile. Uses BFS
+ * @param {int} tileId 
+ * @param {object} board 
+ * @param {int} size 
+ * @param {int} order 
+ */
 function openOtherTiles(tileId, board, size, order) {
   let visited = [];
   let queue = [tileId];
@@ -164,13 +207,17 @@ function openOtherTiles(tileId, board, size, order) {
   return board;
 }
 
+/**
+ * Object that encapsulates all the methods in the file
+ */
 const common = {
   initializeGame: initializeGame,
-  placeBombs: placeBombs,
+  getMineLocations: getMineLocations,
   openOtherTiles: openOtherTiles,
   getNeighbors: getNeighbors,
   clearTile: clearTile,
   revealBoard: revealBoard,
-  getGameState: getGameState
+  getGameState: getGameState,
+  getFormattedTime:getFormattedTime
 };
 export default common;

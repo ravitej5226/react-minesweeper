@@ -1,5 +1,3 @@
-
-
 export default `
 .App {
     text-align: center;

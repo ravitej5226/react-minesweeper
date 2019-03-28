@@ -1,8 +1,20 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Minesweeper
 
-In the project directory, you can run:
+A React version of classic minesweeper game.
+Game automatically starts in a 8x8 grid with 10 mines. 
+
+You can access the game [here](http://minesweeper-rt.s3-website-us-west-1.amazonaws.com/)
+
+
+### Features
+1. The first click will always be an empty cell. So, no more losing on the first click
+2. Left click will reveal the cell, right click will flag the cell for diffusion
+3. Right clicking on a number will reveal all the neighboring cells, provided there are as many neighboring flags as the number represents
+4. Clicking on smiley will validate if game is complete or not. Clicking on it before completion will reset the game
+5. Need help? clicking on hint (light bulb icon) will flag a mine for you
+
+## Using repo commands
 
 ### `npm start`
 
@@ -66,3 +78,6 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 ### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+

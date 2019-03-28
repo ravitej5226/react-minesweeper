@@ -18,8 +18,7 @@ class index extends Component {
   render() {
     return (
       <div
-        className={this.props.className}
-        data-val={this.props.tile.id}
+        className={this.props.className}        
         onContextMenu={e =>
           this.handleClick(e, this.props.tile.id, this.props.tile.cleared)
         }
@@ -27,7 +26,7 @@ class index extends Component {
         {!this.props.tile.cleared ? (
           <button onClick={() => this.props.onTileClicked(this.props.tile.id)}>
             {this.props.tile.diffused ? (
-              <FontAwesomeIcon icon="map-marker-alt" />
+              <FontAwesomeIcon icon="map-marker-alt" className="diffuse-tile" />
             ) : (
               ""
             )}
@@ -41,7 +40,7 @@ class index extends Component {
             )}
           </div>
         ) : (
-          <div className="diffuse-tile">T</div>
+        ""
         )}
       </div>
     );
@@ -66,6 +65,10 @@ const StyledTile = styled(index)`
   
   .clear-tile{     
       color:${props => props.theme.valueColors[props.tile.value]}      
+  }
+
+  .diffuse-tile{
+    color:${props => props.theme.colors.darkRed}      
   }
 
   .clear-tile{
